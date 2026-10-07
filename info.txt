@@ -1,0 +1,28 @@
+Step 5B: Audit fields, soft delete, paging helper and base repository
+
+This part adds four things so every later feature gets them for free:
+
+Automatic audit fields. Saving a new row fills in CreatedAt and CreatedBy, and editing fills in UpdatedAt and UpdatedBy, with no manual code.
+Soft delete. Remove(...) never deletes a row. It flips IsDeleted instead.
+A pagination helper, for the search, sort and page screens.
+A base repository, so each feature doesn't repeat the same database code.
+
+
+to save schema from code first app we use this cmd to save sql queries 
+dotnet ef migrations script --idempotent -o ..\..\database\01_schema.sql
+
+
+dotnet ef migrations add RemovePracticeItemTable
+dotnet ef database update
+
+http://localhost:5080/swagger/index.html
+
+
+http://localhost:5173/login
+
+
+D:\Projects\PurchaseApproval\backend\PurchaseApproval.Api
+
+
+cd D:\Projects\PurchaseApproval\frontend
+npm run dev
