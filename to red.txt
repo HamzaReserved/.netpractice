@@ -5,3 +5,143 @@ error 404 403 409
 
 CLASS SOBJECT 
 ENUM USER ID PROD ID VENDOR ID ETC ISKKO DEKHNA
+
+
+
+i just add a coment in paging.cs for my understanding and pushed it also i dont change any code  and yes dotbuild all 34 test passed so thats why i didnt send to you ...... now in 8b  all the 15 testing methods u told me are working fine and great now i am sending u the ops >> git log --oneline -n 6
+>> git diff bf13f94 f6dcd73 -- backend/PurchaseApproval.Api/Common/Paging.cs
+f6dcd73 (HEAD -> main, origin/main, origin/HEAD, step-08a-requests-api) feat: add purchase requests API with item pricing, ownership rules and status flow
+9df2044 practiceitems migration
+bf13f94 (step-07c-products) feat: add products API and screen with category filter and shared paged-list hook
+aff395d (step-07b-vendors-ui) feat: add vendors screen, reusable components and UTC date handling
+a984336 (step-07a-vendors-api) feat: add vendors API with search, paging, validation and role rules
+3671f29 (step-06-frontend-foundation) feat: add React foundation with login, protected routes, layout and CORS
+diff --git a/backend/PurchaseApproval.Api/Common/Paging.cs b/backend/PurchaseApproval.Api/Common/Paging.cs
+index 06d57e2..436cf85 100644
+--- a/backend/PurchaseApproval.Api/Common/Paging.cs
++++ b/backend/PurchaseApproval.Api/Common/Paging.cs
+@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
+ namespace PurchaseApproval.Api.Common;
+
+ // What a list endpoint returns: one page of items plus the totals
++// describes what the API returns
+ public class PagedResult<T>
+ {
+     public List<T> Items { get; set; } = new();
+@@ -14,7 +15,8 @@ public class PagedResult<T>
+     public bool HasNext => Page < TotalPages;
+ }
+
+-// What a list endpoint receives: ?page=2&pageSize=10&search=laptop&sortBy=name&descending=true
++// What a list endpoint receives
++// describes what the API receives
+ public class PagedQuery
+ {
+     private int _page = 1;
+@@ -36,7 +38,7 @@ public class PagedQuery
+     public string? SortBy { get; set; }
+     public bool Descending { get; set; }
+ }
+-
++//actually gets the correct page from SQL Server
+ public static class QueryableExtensions
+ {
+     public static async Task<PagedResult<T>> ToPagedResultAsync<T>(this IQueryable<T> query, int page, int pageSize).....................................>>
+>> Set-Content src\App.jsx $a
+>> Select-String -Path src\App.jsx -Pattern "RequestsPage","RequestDetailPage","RequestFormPage"
+>>
+>> npm run lint
+>> npm run build
+
+src\App.jsx:8:import RequestsPage from './pages/requests/RequestsPage';
+src\App.jsx:9:import RequestDetailPage from './pages/requests/RequestDetailPage';
+src\App.jsx:10:import RequestFormPage from './pages/requests/RequestFormPage';
+src\App.jsx:26:          <Route path="/requests" element={<RequestsPage />} />
+src\App.jsx:27:          <Route path="/requests/:id" element={<RequestDetailPage />} />
+src\App.jsx:29:            <Route path="/requests/new" element={<RequestFormPage />} />
+src\App.jsx:30:            <Route path="/requests/:id/edit" element={<RequestFormPage />} />
+
+> frontend@0.0.0 lint
+> eslint .
+
+
+> frontend@0.0.0 build
+> vite build
+
+vite v8.3.1 building client environment for production...
+✓ 120 modules transformed.
+computing gzip size...
+dist/index.html                   0.47 kB │ gzip:   0.30 kB
+dist/assets/index-BepJpnBG.css  230.85 kB │ gzip:  31.09 kB
+dist/assets/index-Nw4uHaET.js   375.00 kB │ gzip: 117.05 kB
+
+✓ built in 3.11s
+[PLUGIN_TIMINGS] JavaScript callbacks ran for 2.7s of this 3.1s build (88%).
+The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+  - plugin vite:css transform (68%, 2.1s, 3 calls)
+Additional callback time came from callbacks under 1s.
+See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.............................
+
+warning: in the working copy of 'frontend/src/App.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/services/productService.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/utils/format.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/utils/roles.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/components/requests/RequestStatusBadge.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/requests/RequestDetailPage.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/requests/RequestFormPage.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/pages/requests/RequestsPage.jsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/services/requestService.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'frontend/src/utils/requestStatus.js', LF will be replaced by CRLF the next time Git touches it
+On branch step-08b-requests-ui
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   frontend/src/App.jsx
+        new file:   frontend/src/components/requests/RequestStatusBadge.jsx
+        new file:   frontend/src/pages/requests/RequestDetailPage.jsx
+        new file:   frontend/src/pages/requests/RequestFormPage.jsx
+        new file:   frontend/src/pages/requests/RequestsPage.jsx
+        modified:   frontend/src/services/productService.js
+        new file:   frontend/src/services/requestService.js
+        modified:   frontend/src/utils/format.js
+        new file:   frontend/src/utils/requestStatus.js
+        modified:   frontend/src/utils/roles.js
+
+[step-08b-requests-ui eb8e40e] feat: add purchase requests screens with item rows, live total and server-driven actions
+ 10 files changed, 858 insertions(+), 1 deletion(-)
+ create mode 100644 frontend/src/components/requests/RequestStatusBadge.jsx
+ create mode 100644 frontend/src/pages/requests/RequestDetailPage.jsx
+ create mode 100644 frontend/src/pages/requests/RequestFormPage.jsx
+ create mode 100644 frontend/src/pages/requests/RequestsPage.jsx
+ create mode 100644 frontend/src/services/requestService.js
+ create mode 100644 frontend/src/utils/requestStatus.js
+Switched to branch 'main'
+Your branch is up to date with 'origin/main'.
+Updating f6dcd73..eb8e40e
+Fast-forward
+ frontend/src/App.jsx                               |  11 +-
+ .../src/components/requests/RequestStatusBadge.jsx |   6 +
+ frontend/src/pages/requests/RequestDetailPage.jsx  | 234 +++++++++++++++
+ frontend/src/pages/requests/RequestFormPage.jsx    | 316 +++++++++++++++++++++
+ frontend/src/pages/requests/RequestsPage.jsx       | 216 ++++++++++++++
+ frontend/src/services/productService.js            |   8 +
+ frontend/src/services/requestService.js            |  40 +++
+ frontend/src/utils/format.js                       |   7 +
+ frontend/src/utils/requestStatus.js                |  19 ++
+ frontend/src/utils/roles.js                        |   2 +
+ 10 files changed, 858 insertions(+), 1 deletion(-)
+ create mode 100644 frontend/src/components/requests/RequestStatusBadge.jsx
+ create mode 100644 frontend/src/pages/requests/RequestDetailPage.jsx
+ create mode 100644 frontend/src/pages/requests/RequestFormPage.jsx
+ create mode 100644 frontend/src/pages/requests/RequestsPage.jsx
+ create mode 100644 frontend/src/services/requestService.js
+ create mode 100644 frontend/src/utils/requestStatus.js
+Enumerating objects: 31, done.
+Counting objects: 100% (31/31), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (20/20), done.
+Writing objects: 100% (20/20), 10.61 KiB | 543.00 KiB/s, done.
+Total 20 (delta 7), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (7/7), completed with 7 local objects.
+To https://github.com/HamzaReserved/PurchaseApproval
+   f6dcd73..eb8e40e  main -> main
+PS D:\Projects\PurchaseApproval>
