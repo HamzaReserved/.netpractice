@@ -26,3 +26,28 @@ D:\Projects\PurchaseApproval\backend\PurchaseApproval.Api
 
 cd D:\Projects\PurchaseApproval\frontend
 npm run dev
+
+
+
+
+-- last query claude k9i 
+USE PurchaseApprovalDb;
+SELECT TOP 10 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 70) AS NewValues
+FROM AuditLogs
+WHERE EntityName IN ('Approval', 'PurchaseRequest')
+ORDER BY Id DESC;
+
+
+iska op claude ko dena h 
+
+
+183	1	Update	PurchaseRequest	62	{"Status":"Submitted","SubmittedAt":"2026-10-09T04:46:22.8610204Z"}
+181	1	Create	PurchaseRequest	62	{"IsActive":true,"IsDeleted":false,"Justification":"fahhhhh","RequestN
+178	2	Update	PurchaseRequest	61	{"Status":"Approved"}
+177	2	Create	Approval	50	{"ApproverId":2,"DecidedAt":"2026-10-09T04:44:55.1407994Z","Decision":
+174	4	Update	PurchaseRequest	61	{"Status":"Submitted","SubmittedAt":"2026-10-09T04:43:50.9171202Z"}
+172	4	Update	PurchaseRequest	61	{"TotalAmount":180.00}
+171	4	Update	PurchaseRequest	61	{"Status":"Draft","SubmittedAt":null}
+168	2	Update	PurchaseRequest	61	{"Status":"Rejected"}
+167	2	Create	Approval	49	{"ApproverId":2,"Comments":"dont have much budget for this now. you wi
+164	4	Update	PurchaseRequest	61	{"Status":"Submitted","SubmittedAt":"2026-10-09T04:38:34.8539782Z"}
