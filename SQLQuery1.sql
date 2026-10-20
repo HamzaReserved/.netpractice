@@ -10,6 +10,9 @@ UNION ALL SELECT 'RequestItems', COUNT(*) FROM RequestItems
 UNION ALL SELECT 'Approvals', COUNT(*) FROM Approvals
 UNION ALL SELECT 'PurchaseOrders', COUNT(*) FROM PurchaseOrders;
 
+Select 'Users' AS tablename, count (*) AS totalrows from Users
+union ALL select 'Vendors', COUNT(*) from Vendors;
+
 SELECT * FROM Approvals
 SELECT * FROM __EFMigrationsHistory
 SELECT * FROM AiRecommendationLogs
@@ -31,14 +34,15 @@ FROM AuditLogs ORDER BY Id DESC;
 SELECT Id, Code, Name, IsDeleted, CreatedBy, UpdatedBy, UpdatedAt
 FROM Vendors WHERE Code = 'V900';
 
-USE PurchaseApprovalDb;
-SELECT TOP 8 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 70) AS NewValues FROM AuditLogs ORDER BY Id DESC;
-SELECT Id, Code, Name, IsDeleted, CreatedBy, UpdatedBy FROM Vendors WHERE Code = 'V900';
+SELECT TOP 8 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 70) AS NewValues 
+FROM AuditLogs 
+ORDER BY Id DESC;
 
 
+SELECT Id, Code, Name, IsDeleted, CreatedBy, UpdatedBy 
+FROM Vendors 
+WHERE Code = 'V900';
 
-
-USE PurchaseApprovalDb;
 
 SELECT TOP 14 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 60) AS NewValues
 FROM AuditLogs
@@ -55,10 +59,6 @@ SELECT TOP 10 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 70) AS N
 FROM AuditLogs
 WHERE EntityName IN ('Approval', 'PurchaseRequest')
 ORDER BY Id DESC;
-
-
-
-USE PurchaseApprovalDb;
 
 SELECT TOP 10 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 70) AS NewValues
 FROM AuditLogs
@@ -127,3 +127,23 @@ update Users
 set 
    FullName = 'Ezan Khan'
 where id ='2';
+
+
+
+--------------
+USE PurchaseApprovalDb;
+
+-- Passwords must never appear in the audit log. This must be 0.
+SELECT COUNT(*) AS RowsWithPasswordData
+FROM AuditLogs
+WHERE NewValues LIKE '%AQAAAA%' OR OldValues LIKE '%AQAAAA%'
+   OR NewValues LIKE '%PasswordHash%' OR OldValues LIKE '%PasswordHash%';
+
+SELECT TOP 8 Id, UserId, Action, EntityName, EntityId, LEFT(NewValues, 60) AS NewValues
+FROM AuditLogs
+WHERE EntityName = 'User' AND Action IN ('Create', 'Update', 'PasswordReset')
+ORDER BY Id DESC;
+
+
+
+-----------------------------
