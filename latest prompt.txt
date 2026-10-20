@@ -1,0 +1,194 @@
+>>
+>>         Assert.Single((await h.Service.GetAiDecisionsAsync(new AiDecisionQuery { Outcome = "Overridden" })).Items);
+>>         Assert.Single((await h.Service.GetAiDecisionsAsync(new AiDecisionQuery { Outcome = "Accepted" })).Items);
+>>     }
+>> }
+>> '@ | Set-Content AuditLogServiceTests.cs
+>>
+>> cd ..
+>> dotnet test
+  Determining projects to restore...
+  All projects are up-to-date for restore.
+  PurchaseApproval.Api -> D:\Projects\PurchaseApproval\backend\PurchaseApproval.Api\bin\Debug\net8.0\PurchaseApproval.A
+  pi.dll
+  PurchaseApproval.Tests -> D:\Projects\PurchaseApproval\backend\PurchaseApproval.Tests\bin\Debug\net8.0\PurchaseApprov
+  al.Tests.dll
+Test run for D:\Projects\PurchaseApproval\backend\PurchaseApproval.Tests\bin\Debug\net8.0\PurchaseApproval.Tests.dll (.NETCoreApp,Version=v8.0)
+VSTest version 17.11.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+
+Passed!  - Failed:     0, Passed:    89, Skipped:     0, Total:    89, Duration: 4 s - PurchaseApproval.Tests.dll (net8.0)
+PS D:\Projects\PurchaseApproval\backend>
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Try the new cross-platform PowerShell https://aka.ms/pscore6
+
+PS C:\Users\Hamza.Khan> $base = "http://localhost:5080"
+>>
+>> function Call($method, $url, $token, $body) {
+>>     $headers = @{}
+>>     if ($token) { $headers["Authorization"] = "Bearer $token" }
+>>     try {
+>>         if ($body) { $r = Invoke-WebRequest -Method $method -Uri $url -Headers $headers -ContentType "application/json" -Body $body -UseBasicParsing }
+>>         else       { $r = Invoke-WebRequest -Method $method -Uri $url -Headers $headers -UseBasicParsing }
+>>         "$method $url  ->  $([int]$r.StatusCode)"
+>>         $r.Content
+>>     } catch {
+>>         $resp = $_.Exception.Response
+>>         $reader = New-Object System.IO.StreamReader($resp.GetResponseStream())
+>>         "$method $url  ->  $([int]$resp.StatusCode)"
+>>         $reader.ReadToEnd()
+>>     }
+>>     ""
+>> }
+>> function Code($method, $url, $token, $body) {
+>>     $headers = @{}
+>>     if ($token) { $headers["Authorization"] = "Bearer $token" }
+>>     try {
+>>         if ($body) { return [int](Invoke-WebRequest -Method $method -Uri $url -Headers $headers -ContentType "application/json" -Body $body -UseBasicParsing).StatusCode }
+>>         return [int](Invoke-WebRequest -Method $method -Uri $url -Headers $headers -UseBasicParsing).StatusCode
+>>     } catch { return [int]$_.Exception.Response.StatusCode }
+>> }
+>> function Login($email, $password) {
+>>     (Invoke-RestMethod -Method Post -Uri "$base/api/auth/login" -ContentType "application/json" -Body (@{ email = $email; password = $password } | ConvertTo-Json)).data.token
+>> }
+>> function Auth($token) { @{ Authorization = "Bearer $token" } }
+>> function Json($email, $role, $active) { '{"fullName":"API Test","email":"' + $email + '","role":"' + $role + '","isActive":' + $active.ToString().ToLower() + '}' }
+>>
+>> $adm = Login "admin@demo.com" "Admin@123"
+>> $mgr = Login "manager@demo.com" "Manager@123"
+>> $req = Login "requester1@demo.com" "Requester@123"
+>> $h = Auth $adm
+>>
+>> "--- 1. Only an admin may use these endpoints"
+>> "manager lists users : " + (Code "GET" "$base/api/users" $mgr) + "  (expect 403)"
+>> "requester audit log : " + (Code "GET" "$base/api/auditlogs" $req) + "  (expect 403)"
+>> "admin lists users   : " + (Code "GET" "$base/api/users" $adm) + "  (expect 200)"
+>> $users = (Invoke-RestMethod -Uri "$base/api/users?pageSize=50" -Headers $h).data
+>> "users: " + $users.totalCount
+>> $users.items | Select-Object id, fullName, email, role, isActive | Format-Table
+>>
+>> "--- 2. Create a user"
+>> $email = "api.test." + (Get-Random -Maximum 9999) + "@demo.com"
+>> Call "POST" "$base/api/users" $adm ('{"fullName":"API Test","email":"' + $email + '","role":"Requester","password":"short"}')
+>> $body = '{"fullName":"API Test","email":"' + $email + '","role":"Requester","password":"Secret@123"}'
+>> $created = Invoke-RestMethod -Method Post -Uri "$base/api/users" -Headers $h -ContentType "application/json" -Body $body
+>> $created.data | Format-List id, fullName, email, role, isActive
+>> $uid = $created.data.id
+>> Call "POST" "$base/api/users" $adm $body
+>>
+>> "--- 3. A deactivated user is locked out at once"
+>> $t1 = Login $email "Secret@123"
+>> "me with the token           : " + (Code "GET" "$base/api/auth/me" $t1) + "  (expect 200)"
+>> "admin deactivates the user  : " + (Code "PUT" "$base/api/users/$uid" $adm (Json $email "Requester" $false)) + "  (expect 200)"
+>> "me with the OLD token       : " + (Code "GET" "$base/api/auth/me" $t1) + "  (expect 401)"
+>> "login while deactivated     : " + (Code "POST" "$base/api/auth/login" $null ('{"email":"' + $email + '","password":"Secret@123"}')) + "  (expect 401)"
+>> "admin reactivates           : " + (Code "PUT" "$base/api/users/$uid" $adm (Json $email "Requester" $true)) + "  (expect 200)"
+>> $t2 = Login $email "Secret@123"
+>> "me after reactivation       : " + (Code "GET" "$base/api/auth/me" $t2) + "  (expect 200)"
+>>
+>> "--- 4. A role change retires the old tokens"
+>> "admin makes the user Manager       : " + (Code "PUT" "$base/api/users/$uid" $adm (Json $email "Manager" $true)) + "  (expect 200)"
+>> "me with the token from before      : " + (Code "GET" "$base/api/auth/me" $t2) + "  (expect 401)"
+>> $t3 = Login $email "Secret@123"
+>> "role in the new token              : " + (Invoke-RestMethod -Uri "$base/api/auth/me" -Headers (Auth $t3)).data.role + "  (expect Manager)"
+>>
+>> "--- 5. Reset the password"
+>> "weak password  : " + (Code "POST" "$base/api/users/$uid/reset-password" $adm '{"newPassword":"abc"}') + "  (expect 400)"
+>> "reset         : " + (Code "POST" "$base/api/users/$uid/reset-password" $adm '{"newPassword":"Brand@New9"}') + "  (expect 204)"
+>> "old password  : " + (Code "POST" "$base/api/auth/login" $null ('{"email":"' + $email + '","password":"Secret@123"}')) + "  (expect 401)"
+>> "new password  : " + (Code "POST" "$base/api/auth/login" $null ('{"email":"' + $email + '","password":"Brand@New9"}')) + "  (expect 200)"                                                                                                    >>                                                                                                                      >> "--- 6. Protecting the admin"                                                                                        >> $me = (Invoke-RestMethod -Uri "$base/api/auth/me" -Headers $h).data
+>> "deactivate myself : " + (Code "PUT" "$base/api/users/$($me.id)" $adm (Json "admin@demo.com" "Admin" $false)) + "  (expect 409)"
+>> "demote myself     : " + (Code "PUT" "$base/api/users/$($me.id)" $adm (Json "admin@demo.com" "Manager" $true)) + "  (expect 409)"                                                                                                            >>                                                                                                                      >> "--- 7. The audit log"                                                                                               >> $a = (Invoke-RestMethod -Uri "$base/api/auditlogs?entityName=User&pageSize=10" -Headers $h).data                     >> $a.items | Select-Object id, timestamp, userName, action, entityId | Format-Table                                    >> $f = (Invoke-RestMethod -Uri "$base/api/auditlogs/filters" -Headers $h).data                                         >> "entities : " + ($f.entities -join ", ")                                                                             >> "actions  : " + ($f.actions -join ", ")                                                                              >> $ai = (Invoke-RestMethod -Uri "$base/api/auditlogs/ai-decisions?pageSize=5" -Headers $h).data                        >> $ai.items | Select-Object createdAt, requestNumber, requestedByName, recommendedVendorName, finalVendorName, outcome, overrideReason | Format-Table
+--- 1. Only an admin may use these endpoints
+manager lists users : 403  (expect 403)
+requester audit log : 403  (expect 403)
+admin lists users   : 200  (expect 200)
+users: 5
+
+id fullName     email               role               isActive
+-- --------     -----               ----               --------
+ 1  Hamza khan  admin@demo.com      Admin                  True
+ 4 Amir rashid  requester1@demo.com Requester              True
+ 2 Ezan Khan    manager@demo.com    Manager                True
+ 5 Hassan hayat requester2@demo.com Requester              True
+ 3 Zain zia     officer@demo.com    ProcurementOfficer     True
+
+
+--- 2. Create a user
+POST http://localhost:5080/api/users  ->  400
+{"success":false,"status":400,"message":"Validation failed. Please check the highlighted fields.","errors":{"Password":["Password must be 8 to 100 characters and contain at least one letter and one number."]},"traceId":"0HNPEF64FTTB3:00000008"}
+                                                                                                                                                                                                                                                                                                                                                                        id       : 6                                                                                                            fullName : API Test
+email    : api.test.5980@demo.com
+role     : Requester
+isActive : True
+
+
+
+POST http://localhost:5080/api/users  ->  409
+{"success":false,"status":409,"message":"A user with this email already exists.","errors":{"Email":["This email is already used by another user."]},"traceId":"0HNPEF64FTTB3:0000000A"}
+
+--- 3. A deactivated user is locked out at once
+me with the token           : 200  (expect 200)
+admin deactivates the user  : 200  (expect 200)
+me with the OLD token       : 401  (expect 401)
+login while deactivated     : 401  (expect 401)
+admin reactivates           : 200  (expect 200)
+me after reactivation       : 200  (expect 200)
+--- 4. A role change retires the old tokens
+admin makes the user Manager       : 200  (expect 200)
+me with the token from before      : 401  (expect 401)
+role in the new token              : Manager  (expect Manager)
+--- 5. Reset the password
+weak password  : 400  (expect 400)
+reset         : 204  (expect 204)
+old password  : 401  (expect 401)
+new password  : 200  (expect 200)
+--- 6. Protecting the admin
+deactivate myself : 409  (expect 409)
+demote myself     : 409  (expect 409)
+--- 7. The audit log
+
+ id timestamp                    userName        action        entityId
+ -- ---------                    --------        ------        --------
+800 2026-10-20T07:12:49.067074Z  API Test        Login                6
+799 2026-10-20T07:12:48.8347269Z API Test        LoginFailed          6
+798 2026-10-20T07:12:48.6005062Z  Hamza khan     PasswordReset        6
+797 2026-10-20T07:12:48.2588776Z API Test        Login                6
+796 2026-10-20T07:12:47.7238558Z  Hamza khan     Update               6
+795 2026-10-20T07:12:47.5813085Z API Test        Login                6
+794 2026-10-20T07:12:47.3382019Z  Hamza khan     Update               6
+793 2026-10-20T07:12:47.290808Z  (not logged in) LoginFailed
+792 2026-10-20T07:12:47.1648402Z  Hamza khan     Update               6
+791 2026-10-20T07:12:46.9901157Z API Test        Login                6
+
+
+entities : Approval, Product, PurchaseOrder, PurchaseRequest, RequestItem, User, Vendor
+actions  : Create, Delete, Login, LoginFailed, Logout, PasswordReset, Update
+
+createdAt                    requestNumber requestedByName recommendedVendorName finalVendorName   outcome    overrideR
+                                                                                                              eason
+---------                    ------------- --------------- --------------------- ---------------   -------    ---------
+2026-10-20T05:24:58.3530564Z PR-2026-0041  Zain zia        TechSource Supplies                     Unused
+2026-10-20T05:24:57.3510135Z PR-2026-0041  Zain zia        TechSource Supplies                     Unused
+2026-10-19T06:13:46.5881799Z PR-2026-0073  Zain zia        TechSource Supplies   OfficeHub Traders Overridden this v...
+2026-10-19T06:13:46.5881729Z PR-2026-0073  Zain zia        TechSource Supplies                     Unused
+2026-10-19T04:36:17.904986Z  PR-2026-0046  Zain zia        TechSource Supplies   Metro Supplies    Overridden my choice
+
+
+PS C:\Users\Hamza.Khan>
+
+
+sql query ops 
+0
+
+798	1	PasswordReset	User	6	NULL
+796	1	Update	User	6	{"Role":"Manager"}
+794	1	Update	User	6	{"IsActive":true}
+792	1	Update	User	6	{"IsActive":false}
+790	1	Create	User	6	{"Email":"api.test.5980@demo.com","FullName":"API Test","IsA
+
+
