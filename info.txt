@@ -27,3 +27,17 @@ C:\Users\Hamza.Khan\AppData\Roaming\Microsoft\UserSecrets\8ea7e2f2-1638-4734-8ad
 .env example ko khali .env krna in frontend to run if copy from git 
 
 
+PS D:\Projects\PurchaseApproval> cd D:\Projects
+>> git clone https://github.com/HamzaReserved/PurchaseApproval.git
+
+
+
+gitadd cmd
+cd D:\Projects\PurchaseApproval
+git add .
+git status
+git commit -m "feat: add admin users API, audit log and AI decisions API, and refuse tokens of deactivated or re-roled users"
+git checkout main
+git merge step-13a-users-audit-api
+git push origin main
+
