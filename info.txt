@@ -1,7 +1,6 @@
 To save schema from code first app we use this cmd to save sql queries 
 dotnet ef migrations script --idempotent -o ..\..\database\01_schema.sql
 
-
 dotnet ef migrations add RemovePracticeItemTable
 dotnet ef database update
 
@@ -11,7 +10,7 @@ http://localhost:5080/swagger/index.html
 http://localhost:5173/login
 
 
-D:\Projects\PurchaseApproval\backend\PurchaseApproval.Api
+cd D:\Projects\PurchaseApproval\backend\PurchaseApproval.Api
 
 
 cd D:\Projects\PurchaseApproval\frontend
@@ -23,5 +22,8 @@ cd $env:APPDATA\Microsoft\UserSecrets
 then ls 
 
 C:\Users\Hamza.Khan\AppData\Roaming\Microsoft\UserSecrets\8ea7e2f2-1638-4734-8add-06879dcbe73c
+
+
+.env example ko khali .env krna in frontend to run if copy from git 
 
 
