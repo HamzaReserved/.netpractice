@@ -14,6 +14,7 @@ Select 'Users' AS tablename, count (*) AS totalrows from Users
 union ALL select 'Vendors', COUNT(*) from Vendors;
 
 SELECT * FROM Approvals
+SELECT * FROM Roles
 SELECT * FROM __EFMigrationsHistory
 SELECT * FROM AiRecommendationLogs
 SELECT * FROM AuditLogs
