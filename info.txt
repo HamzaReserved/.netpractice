@@ -10,7 +10,7 @@ http://localhost:5080/swagger/index.html
 http://localhost:5173/login
 
 
-cd D:\Projects\PurchaseApproval\backend\PurchaseApproval.Api
+  cd D:\projects\PurchaseApproval\backend\backend.Api
 
 
 cd D:\Projects\PurchaseApproval\frontend
@@ -23,6 +23,7 @@ then ls
 
 C:\Users\Hamza.Khan\AppData\Roaming\Microsoft\UserSecrets\8ea7e2f2-1638-4734-8add-06879dcbe73c
 
+///PULL KAI BAD 
 
 .env example ko khali .env krna in frontend to run if copy from git 
 
@@ -32,12 +33,31 @@ PS D:\Projects\PurchaseApproval> cd D:\Projects
 
 
 
-gitadd cmd
+git add cmd
 cd D:\Projects\PurchaseApproval
 git add .
 git status
-git commit -m "feat: add admin users API, audit log and AI decisions API, and refuse tokens of deactivated or re-roled users"
+git commit -m "feat: CHANGES IN FRONT END SMALL STYLING CHANGES PLUS README"
 git checkout main
 git merge step-13a-users-audit-api
 git push origin main
+
+
+
+db ef migration 
+dotnet ef database update --project backend\PurchaseApproval.Api\PurchaseApproval.Api.csproj --startup-project backend\PurchaseApproval.Api\PurchaseApproval.Api.csproj --configuration RolesBuild
+
+
+dotnet run --project backend\PurchaseApproval.Api\PurchaseApproval.Api.csproj --configuration RolesBuild
+Building...
+
+
+
+https://github.com/jahanzaib504/crm-lead-system/blob/main/Backend/Backend.Application/Services/UserService.cs
+
+
+
+
+
+
 
